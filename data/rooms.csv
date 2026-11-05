@@ -1,0 +1,26 @@
+room_id,hotel_name,room_number,room_type,floor,capacity,price_per_night,is_active
+R001,Grand Palace Hotel,101,Standard,1,2,120.00,TRUE
+R002,Grand Palace Hotel,102,Standard,1,2,120.00,TRUE
+R003,Grand Palace Hotel,201,Deluxe,2,2,200.00,TRUE
+R004,Grand Palace Hotel,202,Deluxe,2,3,220.00,TRUE
+R005,Grand Palace Hotel,301,Suite,3,4,450.00,TRUE
+R006,Grand Palace Hotel,302,Presidential,3,4,800.00,TRUE
+R007,Grand Palace Hotel,103,Standard,1,2,120.00,FALSE
+R008,Seaside Resort,101,Standard,1,2,150.00,TRUE
+R009,Seaside Resort,102,Standard,1,2,150.00,TRUE
+R010,Seaside Resort,201,Deluxe,2,2,250.00,TRUE
+R011,Seaside Resort,202,Deluxe,2,3,280.00,TRUE
+R012,Seaside Resort,301,Suite,3,4,500.00,TRUE
+R013,Seaside Resort,302,Presidential,3,6,1000.00,TRUE
+R014,Seaside Resort,103,Standard,1,2,150.00,TRUE
+R015,Mountain Lodge,101,Standard,1,2,100.00,TRUE
+R016,Mountain Lodge,102,Standard,1,2,100.00,TRUE
+R017,Mountain Lodge,201,Deluxe,2,2,180.00,TRUE
+R018,Mountain Lodge,202,Deluxe,2,3,200.00,TRUE
+R019,Mountain Lodge,301,Suite,3,4,400.00,TRUE
+R020,Mountain Lodge,302,Presidential,3,4,700.00,TRUE
+R021,City Central Inn,101,Standard,1,2,90.00,TRUE
+R022,City Central Inn,102,Standard,1,2,90.00,TRUE
+R023,City Central Inn,201,Deluxe,2,2,160.00,TRUE
+R024,City Central Inn,202,Deluxe,2,3,175.00,TRUE
+R025,City Central Inn,301,Suite,3,4,350.00,TRUE

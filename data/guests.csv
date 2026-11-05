@@ -1,0 +1,21 @@
+guest_id,first_name,last_name,email,phone,city,country,loyalty_tier,created_date
+G001,Rajesh,Kumar,rajesh.kumar@email.com,+91-9876543210,Mumbai,India,Gold,2024-01-15
+G002,Priya,Sharma,priya.sharma@email.com,+91-9876543211,Delhi,India,Silver,2024-02-20
+G003,John,Smith,john.smith@email.com,+1-5551234567,New York,USA,Platinum,2023-11-10
+G004,Emily,Johnson,emily.j@email.com,+1-5559876543,Chicago,USA,Gold,2024-03-05
+G005,Amit,Patel,amit.patel@email.com,+91-9876543212,Ahmedabad,India,Bronze,2024-04-12
+G006,Sarah,Williams,sarah.w@email.com,+44-2071234567,London,UK,Silver,2024-01-28
+G007,Michael,Brown,michael.b@email.com,+1-5552345678,Los Angeles,USA,Gold,2023-12-01
+G008,Anita,Desai,anita.desai@email.com,+91-9876543213,Bangalore,India,Platinum,2024-05-18
+G009,David,Lee,david.lee@email.com,+65-91234567,Singapore,Singapore,Silver,2024-06-22
+G010,Maria,Garcia,maria.g@email.com,+34-612345678,Madrid,Spain,Bronze,2024-07-01
+G011,Vikram,Singh,vikram.s@email.com,+91-9876543214,Jaipur,India,Gold,2024-02-14
+G012,Lisa,Chen,lisa.chen@email.com,+86-13912345678,Shanghai,China,Silver,2024-03-30
+G013,Robert,Taylor,robert.t@email.com,+1-5553456789,Houston,USA,Bronze,2024-08-15
+G014,Sneha,Reddy,sneha.r@email.com,+91-9876543215,Hyderabad,India,Gold,2024-04-25
+G015,James,Wilson,james.w@email.com,+44-2079876543,Manchester,UK,Platinum,2024-01-05
+G016,Kavita,Nair,kavita.n@email.com,+91-9876543216,Kochi,India,Silver,2024-09-10
+G017,Thomas,Anderson,thomas.a@email.com,+1-5554567890,Seattle,USA,Gold,2024-05-28
+G018,Deepak,Joshi,deepak.j@email.com,+91-9876543217,Pune,India,Bronze,2024-06-15
+G019,Sophie,Martin,sophie.m@email.com,+33-612345678,Paris,France,Silver,2024-07-20
+G020,Arjun,Mehta,arjun.m@email.com,+91-9876543218,Chennai,India,Platinum,2024-08-01
