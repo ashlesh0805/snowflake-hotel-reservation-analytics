@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Reservation & Occupancy Analytics — Snowflake Presentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --border: #E2E8F0;
+            --border-hover: #CBD5E1;
+            --text-title: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --primary: #2563EB;
+            --primary-light: #EFF6FF;
+            --teal: #0D9488;
+            --teal-light: #F0FDFA;
+            --indigo: #4F46E5;
+            --indigo-light: #EEF2FF;
+            --danger: #DC2626;
+            --danger-light: #FEF2F2;
+            --success: #16A34A;
+            --success-light: #F0FDF4;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.02);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-body);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Presentation Wrapper */
+        .deck-container {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            background: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg), 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Slide element */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 48px 56px 60px 56px;
+            display: none;
+            flex-direction: column;
+            background: #FFFFFF;
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Slide Header */
+        .slide-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border-radius: 9999px;
+            width: fit-content;
+            margin-bottom: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid #BFDBFE;
+        }
+
+        .slide-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-title);
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+            margin-bottom: 6px;
+        }
+
+        .slide-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            flex: 1;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        /* Modern White Cards */
+        .card {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .card.subtle {
+            background: var(--bg-body);
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-accent-bar {
+            width: 32px;
+            height: 4px;
+            border-radius: 2px;
+            margin-bottom: 14px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-title);
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-body);
+            line-height: 1.55;
+        }
+
+        /* Metric Highlights */
+        .metric-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            text-align: left;
+        }
+
+        .metric-val {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 6px;
+            letter-spacing: -0.03em;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-title);
+            margin-bottom: 4px;
+        }
+
+        .metric-sub {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        /* Code snippets */
+        pre.code-box {
+            background: #0F172A;
+            color: #F8FAFC;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            padding: 16px;
+            border-radius: 10px;
+            overflow-x: auto;
+            flex: 1;
+        }
+
+        /* Title Slide Customization */
+        .hero-slide {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 72px;
+        }
+
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            background: var(--indigo-light);
+            color: var(--indigo);
+            border: 1px solid #C7D2FE;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            width: fit-content;
+            margin-bottom: 20px;
+        }
+
+        .hero-title {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--text-title);
+            line-height: 1.18;
+            letter-spacing: -0.03em;
+            margin-bottom: 14px;
+        }
+
+        .hero-sub {
+            font-size: 17px;
+            color: var(--text-muted);
+            max-width: 780px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .hero-meta-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .hero-meta-pill {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            padding: 12px 18px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hero-meta-label {
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .hero-meta-val {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-title);
+        }
+
+        /* Bottom Controls Bar */
+        .controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 52px;
+            background: #FFFFFF;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 10;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            max-width: 320px;
+            height: 4px;
+            background: #E2E8F0;
+            border-radius: 9999px;
+            overflow: hidden;
+            margin: 0 20px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 14.2%;
+            transition: width 0.3s ease;
+        }
+
+        .btn {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            color: var(--text-title);
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover {
+            background: var(--bg-body);
+            border-color: var(--border-hover);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #FFFFFF;
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: #1D4ED8;
+        }
+
+        .slide-counter {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* Keyboard helper tip */
+        .key-tip {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .kbd {
+            background: #F1F5F9;
+            border: 1px solid #CBD5E1;
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-size: 10.5px;
+            font-weight: 700;
+            font-family: inherit;
+        }
+
+        /* Print formatting */
+        @media print {
+            body { background: #FFFFFF; }
+            .deck-container { box-shadow: none; border: none; aspect-ratio: auto; height: auto; }
+            .slide { position: relative; display: flex !important; page-break-after: always; height: 100vh; }
+            .controls { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="deck-container" id="deck">
+
+        <!-- SLIDE 1: Cover Slide -->
+        <div class="slide hero-slide active">
+            <div class="hero-pill">Snowflake Data Cloud • Enterprise Project</div>
+            <h1 class="hero-title">Hotel Reservation & Occupancy<br>Analytics System</h1>
+            <p class="hero-sub">An end-to-end cloud data warehouse architecture featuring automated S3 ingestion, booking date quality validation, dynamic occupancy modeling, and serverless scheduled tasks.</p>
+            
+            <div class="hero-meta-row">
+                <div class="hero-meta-pill">
+                    <span class="hero-meta-label">Target Database</span>
+                    <span class="hero-meta-val" style="color: var(--primary);">HOTEL_RESERVATION_DB</span>
+                </div>
+                <div class="hero-meta-pill">
+                    <span class="hero-meta-label">Compute Warehouse</span>
+                    <span class="hero-meta-val" style="color: var(--teal);">HOTEL_WH (X-Small)</span>
+                </div>
+                <div class="hero-meta-pill">
+                    <span class="hero-meta-label">Pipeline Automation</span>
+                    <span class="hero-meta-val" style="color: var(--indigo);">Serverless Snowflake Task</span>
+                </div>
+                <div class="hero-meta-pill">
+                    <span class="hero-meta-label">Presenter / Author</span>
+                    <span class="hero-meta-val">Ashlesh Gurram</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Business Case & Objectives -->
+        <div class="slide">
+            <span class="slide-tag">Business Context</span>
+            <h2 class="slide-title">Hotel Operations Scenario & Key Pain Points</h2>
+            <p class="slide-subtitle">A multi-property hotel chain needed a reliable, modern cloud warehouse to replace fragmented reports and eliminate revenue leakage.</p>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-accent-bar" style="background: var(--danger);"></div>
+                    <h3 class="card-title">1. Anomalous Booking Dates</h3>
+                    <p class="card-desc">Partner OTAs and direct systems frequently feed corrupted dates where check-out precedes check-in or zero-day stays occur, artificially skewing length-of-stay and revenue KPIs.</p>
+                </div>
+                <div class="card">
+                    <div class="card-accent-bar" style="background: var(--primary);"></div>
+                    <h3 class="card-title">2. Untracked Cancellation Losses</h3>
+                    <p class="card-desc">Cancellations across different channels (Website, OTA, Phone, Walk-in) caused hidden revenue losses with zero visibility into refund timelines or exposure by room type.</p>
+                </div>
+                <div class="card">
+                    <div class="card-accent-bar" style="background: var(--teal);"></div>
+                    <h3 class="card-title">3. Dynamic Occupancy Calculation</h3>
+                    <p class="card-desc">Measuring occupancy requires reconciling active room counts against fluctuating days in calendar months while isolating cancelled bookings so available inventory isn't miscounted.</p>
+                </div>
+                <div class="card">
+                    <div class="card-accent-bar" style="background: var(--indigo);"></div>
+                    <h3 class="card-title">4. Manual Aggregation & Monitoring</h3>
+                    <p class="card-desc">Executive rollups previously required tedious manual spreadsheet formulas with no automated scheduling, time travel audit capability, or health monitoring.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Architecture & Schemas -->
+        <div class="slide">
+            <span class="slide-tag">Architecture</span>
+            <h2 class="slide-title">Layered Data Warehouse Design (Medallion Pattern)</h2>
+            <p class="slide-subtitle">Cleanly partitioned into 3 database schemas ensuring isolation of raw data, business validation, and analytics consumption.</p>
+            
+            <div class="grid-3">
+                <div class="card" style="background: var(--primary-light); border-color: #BFDBFE;">
+                    <div class="card-accent-bar" style="background: var(--primary);"></div>
+                    <h3 class="card-title" style="color: var(--primary);">RAW Layer (Bronze)</h3>
+                    <p class="card-desc" style="font-weight: 500; margin-bottom: 12px; color: var(--text-muted);">Landing Zone & Ingestion</p>
+                    <p class="card-desc">
+                        • External Stage: <code>@HOTEL_S3_STAGE</code><br>
+                        • Ingestion Format: <code>CSV_FORMAT</code><br>
+                        • <code>RAW_GUESTS</code> (20 profiles)<br>
+                        • <code>RAW_ROOMS</code> (25 rooms)<br>
+                        • <code>RAW_RESERVATIONS</code> (43 bookings)<br>
+                        • <code>RAW_PAYMENTS</code> (43 transactions)
+                    </p>
+                </div>
+
+                <div class="card" style="background: var(--teal-light); border-color: #99F6E4;">
+                    <div class="card-accent-bar" style="background: var(--teal);"></div>
+                    <h3 class="card-title" style="color: var(--teal);">CLEAN Layer (Silver)</h3>
+                    <p class="card-desc" style="font-weight: 500; margin-bottom: 12px; color: var(--text-muted);">Business Validation & Quality</p>
+                    <p class="card-desc">
+                        • <code>V_RESERVATION_DATE_VALIDATION</code><br>
+                        • Isolates RES041, RES042, RES043<br>
+                        • <code>CLEAN_RESERVATIONS</code> (40 valid)<br>
+                        • <code>V_CANCELLED_RESERVATIONS</code><br>
+                        • Tracks 8 cancellations & refunds<br>
+                        • Standardized guest profiles
+                    </p>
+                </div>
+
+                <div class="card" style="background: var(--indigo-light); border-color: #C7D2FE;">
+                    <div class="card-accent-bar" style="background: var(--indigo);"></div>
+                    <h3 class="card-title" style="color: var(--indigo);">ANALYTICS Layer (Gold)</h3>
+                    <p class="card-desc" style="font-weight: 500; margin-bottom: 12px; color: var(--text-muted);">Consolidated Metrics & Automation</p>
+                    <p class="card-desc">
+                        • <code>FACT_RESERVATION_ANALYTICS</code><br>
+                        • <code>V_MONTHLY_OCCUPANCY</code> (%)<br>
+                        • <code>V_REVENUE_BY_HOTEL</code> (Net Rev)<br>
+                        • <code>V_REVENUE_BY_ROOM_TYPE</code> (ADR)<br>
+                        • <code>DAILY_RESERVATION_SUMMARY</code><br>
+                        • Serverless Scheduled Task (CRON)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Data Engineering & Date Validation -->
+        <div class="slide">
+            <span class="slide-tag">Data Quality</span>
+            <h2 class="slide-title">Automated Date Validation & Anomaly Detection</h2>
+            <p class="slide-subtitle">Intercepting corrupted records at the Clean layer ensures downstream financial and operational reports are 100% accurate.</p>
+            
+            <div class="grid-2">
+                <div class="card" style="padding: 16px;">
+                    <h3 class="card-title" style="font-size: 14px; margin-bottom: 10px;">Validation Logic in Snowflake SQL</h3>
+                    <pre class="code-box">CREATE OR REPLACE VIEW V_RESERVATION_DATE_VALIDATION AS
+SELECT
+  reservation_id, check_in_date, check_out_date,
+  DATEDIFF('day', check_in_date, check_out_date) 
+    AS stay_duration_days,
+  CASE
+    WHEN check_in_date IS NULL 
+      THEN 'INVALID - NULL dates'
+    WHEN check_out_date < check_in_date 
+      THEN 'INVALID - Checkout before Checkin'
+    WHEN check_out_date = check_in_date 
+      THEN 'INVALID - Zero night stay'
+    ELSE 'VALID'
+  END AS date_validation_status
+FROM RAW_RESERVATIONS;</pre>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title" style="color: var(--danger);">Anomalies Intercepted & Excluded</h3>
+                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 14px;">
+                        <div style="padding: 10px 14px; background: var(--danger-light); border-left: 3px solid var(--danger); border-radius: 6px;">
+                            <strong style="color: var(--danger); font-size: 13px;">RES041 (Grand Palace Hotel)</strong>
+                            <p style="font-size: 12px; color: var(--text-body); margin-top: 2px;">Check-in: 2024-11-15 | Check-out: 2024-11-10 (-5 days). Flagged as checkout before checkin.</p>
+                        </div>
+                        <div style="padding: 10px 14px; background: var(--danger-light); border-left: 3px solid var(--danger); border-radius: 6px;">
+                            <strong style="color: var(--danger); font-size: 13px;">RES042 (Seaside Resort)</strong>
+                            <p style="font-size: 12px; color: var(--text-body); margin-top: 2px;">Check-in: 2024-12-25 | Check-out: 2024-12-20 (-5 days). Filtered out from room availability.</p>
+                        </div>
+                        <div style="padding: 10px 14px; background: var(--danger-light); border-left: 3px solid var(--danger); border-radius: 6px;">
+                            <strong style="color: var(--danger); font-size: 13px;">RES043 (Mountain Lodge)</strong>
+                            <p style="font-size: 12px; color: var(--text-body); margin-top: 2px;">Check-in: 2024-10-10 | Check-out: 2024-10-10 (0 days). Zero-night stay excluded from occupancy.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Business Analytics & Metrics -->
+        <div class="slide">
+            <span class="slide-tag">Executive KPIs</span>
+            <h2 class="slide-title">Verified Reservation, Revenue & Occupancy Results</h2>
+            <p class="slide-subtitle">Derived from the consolidated fact table <code>FACT_RESERVATION_ANALYTICS</code> and verified live in Snowflake.</p>
+            
+            <div class="grid-4" style="margin-bottom: 20px;">
+                <div class="metric-card">
+                    <div class="metric-val" style="color: var(--primary);">40</div>
+                    <div class="metric-label">Valid Bookings</div>
+                    <div class="metric-sub">Cleaned from 43 raw records</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" style="color: var(--success);">$46,880</div>
+                    <div class="metric-label">Total Net Revenue</div>
+                    <div class="metric-sub">Completed revenue minus refunds</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" style="color: var(--danger);">8</div>
+                    <div class="metric-label">Cancelled Bookings</div>
+                    <div class="metric-sub">20% drop-off ($5,290 refunded)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" style="color: var(--teal);">58.3%</div>
+                    <div class="metric-label">Peak Occupancy</div>
+                    <div class="metric-sub">Seaside Resort leading property</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card subtle">
+                    <h4 class="card-title" style="font-size: 14px;">Booking Channel Breakdown</h4>
+                    <p class="card-desc" style="font-size: 12.5px;">
+                        • <strong>Online Travel Agencies (OTA):</strong> 38% cancellation rate (requires deposit policy)<br>
+                        • <strong>Direct Website:</strong> 14% cancellation rate with highest profit margin<br>
+                        • <strong>Phone Bookings:</strong> 18% cancellation rate; high corporate share<br>
+                        • <strong>Walk-Ins:</strong> 0% cancellation rate with 100% revenue capture
+                    </p>
+                </div>
+                <div class="card subtle">
+                    <h4 class="card-title" style="font-size: 14px;">Yield & Loyalty Tier Insights</h4>
+                    <p class="card-desc" style="font-size: 12.5px;">
+                        • <strong>Suites & Presidential Rooms:</strong> Drive 48% of gross hotel revenues.<br>
+                        • <strong>Platinum Loyalty Guests:</strong> Spend 3.2x higher than Standard tier.<br>
+                        • <strong>Seaside Resort:</strong> Achieved longest average stay duration (4.2 nights).<br>
+                        • <strong>City Central Inn:</strong> Highest room turnover (consistent business travelers).
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Snowflake Task & Monitoring -->
+        <div class="slide">
+            <span class="slide-tag">Automation</span>
+            <h2 class="slide-title">Serverless Scheduled Task & Task History Monitoring</h2>
+            <p class="slide-subtitle">Automated daily metric rollups with sub-5-second execution and zero idle compute costs.</p>
+            
+            <div class="grid-2">
+                <div class="card" style="padding: 16px;">
+                    <h3 class="card-title" style="font-size: 14px; margin-bottom: 8px;">Scheduled Task Definition</h3>
+                    <pre class="code-box">CREATE OR REPLACE TASK 
+  TASK_DAILY_RESERVATION_AGGREGATION
+  WAREHOUSE = HOTEL_WH
+  SCHEDULE  = 'USING CRON 0 6 * * * UTC'
+AS
+INSERT INTO DAILY_RESERVATION_SUMMARY
+(
+  summary_date, hotel_name, room_type,
+  total_reservations, net_revenue,
+  occupancy_pct, top_booking_source...
+)
+SELECT ... FROM FACT_RESERVATION_ANALYTICS;
+
+ALTER TASK ... RESUME;</pre>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title" style="color: var(--success); font-size: 15px;">Live Task History Verification</h3>
+                    <p class="card-desc" style="font-size: 12.5px; margin-top: 8px; line-height: 1.6;">
+                        • <strong>Monitoring Query:</strong><br>
+                        <code>SELECT NAME, STATE, SCHEDULED_TIME, DURATION_SECS<br>
+                        FROM TABLE(INFORMATION_SCHEMA.TASK_HISTORY());</code><br><br>
+                        • <strong>Observed Production Metrics:</strong><br>
+                        ✓ Status: <strong style="color: var(--success);">SUCCEEDED</strong><br>
+                        ✓ Duration: <strong>3.07 seconds</strong><br>
+                        ✓ Warehouse: <strong>HOTEL_WH (X-Small)</strong><br>
+                        ✓ Auto-Suspend: <strong>120 seconds</strong> (Cost optimal)<br>
+                        ✓ Next Scheduled Trigger: <strong>6:00 AM UTC</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Conclusion & Strategic ROI -->
+        <div class="slide">
+            <span class="slide-tag">Business Value</span>
+            <h2 class="slide-title">Summary, Business Impact & Next Steps</h2>
+            <p class="slide-subtitle">Delivered a robust, production-grade hotel analytics solution built entirely on Snowflake best practices.</p>
+            
+            <div class="grid-4" style="margin-bottom: 24px;">
+                <div class="card">
+                    <div class="card-accent-bar" style="background: var(--primary);"></div>
+                    <h3 class="card-title" style="font-size: 14px;">100% Reliable Data</h3>
+                    <p class="card-desc">Corrupt booking dates are filtered upfront, preventing distorted revenue and length-of-stay KPIs.</p>
+                </div>
+                <div class="card">
+                    <div class="card-accent-bar" style="background: var(--danger);"></div>
+                    <h3 class="card-title" style="font-size: 14px;">Refund Protection</h3>
+                    <p class="card-desc">Clear isolation of $5,290 in cancellation refunds enables strategic non-refundable OTA policies.</p>
+                </div>
+                <div class="card">
+                    <div class="card-accent-bar" style="background: var(--teal);"></div>
+                    <h3 class="card-title" style="font-size: 14px;">Dynamic Capacity</h3>
+                    <p class="card-desc">Property managers receive real-time visibility into idle room inventory and seasonal trends.</p>
+                </div>
+                <div class="card">
+                    <div class="card-accent-bar" style="background: var(--success);"></div>
+                    <h3 class="card-title" style="font-size: 14px;">Near-Zero Compute</h3>
+                    <p class="card-desc">Scheduled task finishes in ~3s on an X-Small warehouse, keeping monthly costs negligible.</p>
+                </div>
+            </div>
+
+            <div style="padding: 14px 20px; background: var(--indigo-light); border: 1px solid #C7D2FE; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; font-weight: 700; color: var(--indigo);">GitHub Repo: github.com/ashlesh0805/snowflake-hotel-reservation-analytics</span>
+                <span style="font-size: 12.5px; font-weight: 600; color: var(--text-title);">Author: Ashlesh Gurram</span>
+            </div>
+        </div>
+
+        <!-- Controls Footer -->
+        <div class="controls">
+            <div class="key-tip">
+                <span>Navigate:</span>
+                <span class="kbd">←</span>
+                <span class="kbd">→</span>
+                <span>or</span>
+                <span class="kbd">Space</span>
+            </div>
+
+            <div style="display: flex; align-items: center;">
+                <button class="btn" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+                <button class="btn btn-primary" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="slide-counter" id="counter">1 / 7</span>
+                <button class="btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const counter = document.getElementById('counter');
+        const progressFill = document.getElementById('progressFill');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function updateDeck() {
+            slides.forEach((s, idx) => {
+                s.classList.toggle('active', idx === currentSlide);
+            });
+            counter.textContent = `${currentSlide + 1} / ${slides.length}`;
+            progressFill.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.textContent = currentSlide === slides.length - 1 ? 'Finish ↺' : 'Next →';
+        }
+
+        function changeSlide(dir) {
+            if (dir === 1 && currentSlide === slides.length - 1) {
+                currentSlide = 0;
+            } else {
+                currentSlide = Math.max(0, Math.min(slides.length - 1, currentSlide + dir));
+            }
+            updateDeck();
+        }
+
+        function toggleFullscreen() {
+            const elem = document.getElementById('deck');
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                e.preventDefault();
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                changeSlide(-1);
+            } else if (e.key === 'f' || e.key === 'F') {
+                toggleFullscreen();
+            }
+        });
+
+        updateDeck();
+    </script>
+</body>
+</html>
