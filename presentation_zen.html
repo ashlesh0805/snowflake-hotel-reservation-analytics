@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Reservation & Occupancy Analytics — Team 07 Japanese Style</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --washi-bg: #FDFDFC;
+            --card-bg: #FFFFFF;
+            --sumi-ink: #18181B;
+            --slate-gray: #52525B;
+            --muted-stone: #A1A1AA;
+            --hairline: #E4E4E7;
+            --vermilion: #C82333;
+            --vermilion-soft: #FFF1F2;
+            --indigo: #1E3A8A;
+            --indigo-soft: #EEF2FF;
+            --matcha: #15803D;
+            --matcha-soft: #F0FDF4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F4F4F5;
+            color: var(--sumi-ink);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        /* 16:9 Responsive Presentation Slide Container */
+        .deck-wrapper {
+            width: 100%;
+            max-width: 1280px;
+            aspect-ratio: 16 / 9;
+            background: var(--washi-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+            border: 1px solid var(--hairline);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 2.8rem 3.5rem;
+            flex-direction: column;
+            justify-content: space-between;
+            animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Slide Header */
+        .slide-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--hairline);
+            margin-bottom: 1.5rem;
+        }
+
+        .hanko-stamp {
+            width: 44px;
+            height: 44px;
+            background: var(--vermilion);
+            color: #FFFFFF;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            flex-shrink: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .header-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .header-cat {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--vermilion);
+            text-transform: uppercase;
+        }
+
+        .header-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--sumi-ink);
+            line-height: 1.2;
+        }
+
+        .header-sub {
+            font-size: 0.9rem;
+            color: var(--slate-gray);
+            margin-top: 0.2rem;
+        }
+
+        /* Slide Body Grids */
+        .slide-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 1.25rem;
+            height: 100%;
+        }
+
+        .grid-3col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 1.25rem;
+            height: 100%;
+        }
+
+        .grid-4col {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 1.25rem;
+        }
+
+        .grid-5col {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 1rem;
+        }
+
+        /* Zen Minimalist Cards */
+        .zen-card {
+            background: var(--card-bg);
+            border: 1px solid var(--hairline);
+            border-radius: 8px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .zen-card.tint-indigo { background: var(--indigo-soft); }
+        .zen-card.tint-vermilion { background: var(--vermilion-soft); }
+        .zen-card.tint-matcha { background: var(--matcha-soft); }
+
+        .card-accent-bar {
+            width: 32px;
+            height: 3px;
+            margin-bottom: 0.75rem;
+            border-radius: 2px;
+        }
+        .bar-vermilion { background: var(--vermilion); }
+        .bar-indigo { background: var(--indigo); }
+        .bar-matcha { background: var(--matcha); }
+        .bar-sumi { background: var(--sumi-ink); }
+
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--sumi-ink);
+            margin-bottom: 0.2rem;
+        }
+
+        .card-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        .tag-vermilion { color: var(--vermilion); }
+        .tag-indigo { color: var(--indigo); }
+        .tag-matcha { color: var(--matcha); }
+        .tag-slate { color: var(--slate-gray); }
+
+        .card-text {
+            font-size: 0.88rem;
+            color: var(--slate-gray);
+            line-height: 1.45;
+        }
+
+        .card-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            font-size: 0.85rem;
+            color: var(--sumi-ink);
+            margin-top: 0.5rem;
+        }
+
+        .card-list li::before {
+            content: "•";
+            color: var(--vermilion);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -0.2em;
+        }
+
+        /* KPI Display */
+        .kpi-num {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.35rem;
+        }
+        .kpi-label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--sumi-ink);
+        }
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: var(--muted-stone);
+            margin-top: 0.2rem;
+        }
+
+        /* Code Block */
+        pre.code-zen {
+            background: #FAFAFA;
+            border: 1px solid var(--hairline);
+            border-radius: 6px;
+            padding: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--indigo);
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        /* Cover Slide Specifics */
+        .cover-seal {
+            width: 72px;
+            height: 72px;
+            background: var(--vermilion);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            line-height: 1.1;
+            letter-spacing: 1px;
+        }
+
+        .cover-hero-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--sumi-ink);
+            line-height: 1.15;
+            margin: 1.5rem 0 0.8rem 0;
+            letter-spacing: -0.5px;
+        }
+
+        .cover-desc {
+            font-size: 1.05rem;
+            color: var(--slate-gray);
+            max-width: 900px;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .team-banner {
+            background: #FFFFFF;
+            border: 1.5px solid var(--vermilion);
+            border-radius: 8px;
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .team-banner-tag {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--vermilion);
+            letter-spacing: 1px;
+        }
+        .team-banner-names {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--sumi-ink);
+        }
+
+        /* Navigation Controls */
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1280px;
+            margin-top: 1rem;
+            padding: 0 0.5rem;
+        }
+
+        .btn-nav {
+            background: #FFFFFF;
+            border: 1px solid var(--hairline);
+            padding: 0.55rem 1.25rem;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--sumi-ink);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-nav:hover {
+            border-color: var(--vermilion);
+            color: var(--vermilion);
+        }
+
+        .slide-counter {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--slate-gray);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="deck-wrapper">
+
+        <!-- SLIDE 1: COVER -->
+        <div class="slide active" id="slide-1">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="cover-seal">TEAM<br>07</div>
+                <div>
+                    <div style="font-size: 0.78rem; font-weight: 800; color: var(--vermilion); letter-spacing: 1.5px;">SNOWFLAKE CLOUD DATA PLATFORM • ENTERPRISE ANALYTICS</div>
+                    <div style="font-size: 1.15rem; font-weight: 700; color: var(--sumi-ink);">High-Precision Data Warehousing & Automated Pipeline Architecture</div>
+                </div>
+            </div>
+
+            <div>
+                <h1 class="cover-hero-title">Hotel Reservation & Occupancy<br>Analytics System</h1>
+                <p class="cover-desc">An end-to-end enterprise data engineering solution on Snowflake: Medallion Architecture, Automated CSV Ingestion, Date Integrity Validation, Dynamic Occupancy Modeling, and Serverless Task Orchestration.</p>
+
+                <div class="team-banner">
+                    <span class="team-banner-tag">PROJECT BY TEAM 07</span>
+                    <span class="team-banner-names">Ashlesh Gurram &nbsp;•&nbsp; Varun &nbsp;•&nbsp; Sakshi &nbsp;•&nbsp; Barghavi &nbsp;•&nbsp; Akshitha</span>
+                </div>
+            </div>
+
+            <div class="grid-4col">
+                <div class="zen-card">
+                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted-stone);">01 / WAREHOUSE</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--sumi-ink); margin-top: 0.2rem;">HOTEL_WH (X-Small)</div>
+                </div>
+                <div class="zen-card">
+                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted-stone);">02 / DATABASE</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--indigo); margin-top: 0.2rem;">HOTEL_RESERVATION_DB</div>
+                </div>
+                <div class="zen-card">
+                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted-stone);">03 / AUTOMATION</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--vermilion); margin-top: 0.2rem;">CRON 0 6 * * * UTC</div>
+                </div>
+                <div class="zen-card">
+                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted-stone);">04 / PLATFORM</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--matcha); margin-top: 0.2rem;">Snowflake Cloud Enterprise</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: PROBLEM STATEMENT -->
+        <div class="slide" id="slide-2">
+            <div class="slide-header">
+                <div class="hanko-stamp">02</div>
+                <div class="header-meta">
+                    <span class="header-cat">PROBLEM STATEMENT</span>
+                    <h2 class="header-title">Core Operational Challenges in Multi-Property Hospitality</h2>
+                    <p class="header-sub">Fragmented booking sources introduced corrupt dates, unmonitored cancellation exposure, and inaccurate occupancy metrics.</p>
+                </div>
+            </div>
+            <div class="slide-body">
+                <div class="grid-2x2">
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-vermilion"></div>
+                        <div class="card-title">01 &nbsp; Anomalous Date Corruptions</div>
+                        <div class="card-tag tag-vermilion">Check-out Preceding Check-in</div>
+                        <div class="card-text">Corrupt booking records where check-out precedes check-in or zero-night stays severely skew length-of-stay, room availability, and inventory calculations.</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-indigo"></div>
+                        <div class="card-title">02 &nbsp; Untracked Cancellation Leakage</div>
+                        <div class="card-tag tag-indigo">Revenue Loss & Sudden Spikes</div>
+                        <div class="card-text">Sudden cancellation spikes through indirect channels caused unmonitored revenue leakage without clear visibility into refund volumes ($5,290+).</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-matcha"></div>
+                        <div class="card-title">03 &nbsp; Dynamic Occupancy Complexity</div>
+                        <div class="card-tag tag-matcha">Fluctuating Monthly Capacity</div>
+                        <div class="card-text">Reconciling active room capacity across varying calendar days while excluding cancelled bookings required dynamic cross-join modeling.</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-sumi"></div>
+                        <div class="card-title">04 &nbsp; Manual Pipeline Vulnerability</div>
+                        <div class="card-tag tag-slate">Spreadsheet Silos & Idle Compute</div>
+                        <div class="card-text">Relying on end-of-month manual spreadsheet exports risked human error, lacked versioning, and lacked automated schedule health monitoring.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: ARCHITECTURE -->
+        <div class="slide" id="slide-3">
+            <div class="slide-header">
+                <div class="hanko-stamp">03</div>
+                <div class="header-meta">
+                    <span class="header-cat">DATA ARCHITECTURE</span>
+                    <h2 class="header-title">3-Tier Medallion Data Engineering Architecture</h2>
+                    <p class="header-sub">Separation of concerns: Raw ingestion landing, business validation, and executive analytics consumption.</p>
+                </div>
+            </div>
+            <div class="slide-body">
+                <div class="grid-3col">
+                    <div class="zen-card tint-indigo">
+                        <div class="card-accent-bar bar-indigo"></div>
+                        <div class="card-title">RAW LAYER</div>
+                        <div class="card-tag tag-indigo">Bronze Ingestion Zone</div>
+                        <ul class="card-list">
+                            <li>S3 External Stage (@HOTEL_S3_STAGE)</li>
+                            <li>CSV File Format with header skip</li>
+                            <li>RAW_GUESTS (20 guest profiles)</li>
+                            <li>RAW_ROOMS (25 rooms across 4 hotels)</li>
+                            <li>RAW_RESERVATIONS (43 bookings)</li>
+                            <li>RAW_PAYMENTS (43 payment records)</li>
+                            <li>Full schema immutability preserved</li>
+                        </ul>
+                    </div>
+                    <div class="zen-card tint-vermilion">
+                        <div class="card-accent-bar bar-vermilion"></div>
+                        <div class="card-title">CLEAN LAYER</div>
+                        <div class="card-tag tag-vermilion">Silver Validation Zone</div>
+                        <ul class="card-list">
+                            <li>V_RESERVATION_DATE_VALIDATION</li>
+                            <li>Automatically flags RES041–RES043</li>
+                            <li>CLEAN_RESERVATIONS (40 valid rows)</li>
+                            <li>V_CANCELLED_RESERVATIONS</li>
+                            <li>Tracks 8 cancellations ($5,290 refund)</li>
+                            <li>Enriched guest profile linkages</li>
+                            <li>Date anomaly quarantine in place</li>
+                        </ul>
+                    </div>
+                    <div class="zen-card tint-matcha">
+                        <div class="card-accent-bar bar-matcha"></div>
+                        <div class="card-title">ANALYTICS LAYER</div>
+                        <div class="card-tag tag-matcha">Gold Consumption Zone</div>
+                        <ul class="card-list">
+                            <li>FACT_RESERVATION_ANALYTICS</li>
+                            <li>V_MONTHLY_OCCUPANCY (Dynamic %)</li>
+                            <li>V_REVENUE_BY_HOTEL (Net Revenue)</li>
+                            <li>V_REVENUE_BY_ROOM_TYPE (ADR & Rev)</li>
+                            <li>DAILY_RESERVATION_SUMMARY</li>
+                            <li>Automated Daily Task (CRON 6 AM)</li>
+                            <li>Power BI / Tableau direct access</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: DATA QUALITY -->
+        <div class="slide" id="slide-4">
+            <div class="slide-header">
+                <div class="hanko-stamp">04</div>
+                <div class="header-meta">
+                    <span class="header-cat">DATA QUALITY & INTEGRITY</span>
+                    <h2 class="header-title">Reservation Date Validation Logic & Quarantine</h2>
+                    <p class="header-sub">Automated SQL rules quarantine negative durations and zero-night stays before data reaches analytics.</p>
+                </div>
+            </div>
+            <div class="slide-body">
+                <div class="grid-2x2">
+                    <div class="zen-card">
+                        <div class="card-title">SQL Automated Validation Rules</div>
+                        <div class="card-tag tag-indigo">Deterministic Verification Case Statement</div>
+                        <pre class="code-zen">CASE
+  WHEN check_in_date IS NULL 
+    THEN 'INVALID - NULL dates'
+
+  WHEN check_out_date &lt; check_in_date
+    THEN 'INVALID - Checkout before Checkin'
+
+  WHEN check_out_date = check_in_date
+    THEN 'INVALID - Zero night stay'
+
+  WHEN DATEDIFF('day', check_in, check_out) &gt; 365
+    THEN 'WARNING - Stay exceeds 365 days'
+
+  ELSE 'VALID'
+END AS date_validation_status;</pre>
+                        <p class="card-text" style="margin-top: 0.75rem;"><strong>Production Impact:</strong> Any record not evaluating to 'VALID' is blocked from entering the production CLEAN table, safeguarding financial models.</p>
+                    </div>
+
+                    <div class="zen-card">
+                        <div class="card-title" style="color: var(--vermilion);">Quarantined Anomalies (3 Corrupt Bookings)</div>
+                        <div class="card-tag tag-vermilion">Detected &amp; Isolated in Clean View</div>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: var(--sumi-ink);">RES041 • Grand Palace Hotel</div>
+                                <div style="font-size: 0.78rem; font-weight: 600; color: var(--vermilion);">IN: 2024-11-15 &nbsp;|&nbsp; OUT: 2024-11-10 (-5 Days)</div>
+                                <div class="card-text" style="font-size: 0.82rem;">Check-out occurs 5 days before check-in. Flagged immediately by validation view and filtered out of CLEAN_RESERVATIONS.</div>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: var(--sumi-ink);">RES042 • Seaside Resort</div>
+                                <div style="font-size: 0.78rem; font-weight: 600; color: var(--vermilion);">IN: 2024-12-25 &nbsp;|&nbsp; OUT: 2024-12-20 (-5 Days)</div>
+                                <div class="card-text" style="font-size: 0.82rem;">OTA booking injection with inverted calendar sequence. Quarantined to prevent skewing room availability metrics.</div>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: var(--sumi-ink);">RES043 • Mountain Lodge</div>
+                                <div style="font-size: 0.78rem; font-weight: 600; color: var(--vermilion);">IN: 2024-10-10 &nbsp;|&nbsp; OUT: 2024-10-10 (0 Nights)</div>
+                                <div class="card-text" style="font-size: 0.82rem;">Same-day booking and departure without overnight stay. Excluded from overnight occupancy percentage calculations.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: EXECUTIVE METRICS -->
+        <div class="slide" id="slide-5">
+            <div class="slide-header">
+                <div class="hanko-stamp">05</div>
+                <div class="header-meta">
+                    <span class="header-cat">EXECUTIVE METRICS</span>
+                    <h2 class="header-title">Key Analytical Findings & Financial Performance</h2>
+                    <p class="header-sub">Verified metrics computed from FACT_RESERVATION_ANALYTICS across 4 hotel properties.</p>
+                </div>
+            </div>
+            <div class="slide-body">
+                <div class="grid-4col" style="margin-bottom: 1.25rem;">
+                    <div class="zen-card">
+                        <div class="kpi-num" style="color: var(--indigo);">40</div>
+                        <div class="kpi-label">Valid Bookings</div>
+                        <div class="kpi-sub">3 corrupt bookings filtered</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="kpi-num" style="color: var(--matcha);">$46,880</div>
+                        <div class="kpi-label">Net Realized Revenue</div>
+                        <div class="kpi-sub">Less $5,290 refunds</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="kpi-num" style="color: var(--vermilion);">20.0%</div>
+                        <div class="kpi-label">Cancellation Rate</div>
+                        <div class="kpi-sub">8 cancelled bookings</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="kpi-num" style="color: var(--sumi-ink);">58.1%</div>
+                        <div class="kpi-label">Peak Occupancy Rate</div>
+                        <div class="kpi-sub">Seaside Resort led October</div>
+                    </div>
+                </div>
+
+                <div class="grid-2x2">
+                    <div class="zen-card">
+                        <div class="card-title">Cancellation Exposure by Booking Channel</div>
+                        <ul class="card-list" style="margin-top: 0.5rem;">
+                            <li><strong>Online Travel Agencies (OTA):</strong> 38.4% cancellation rate ($2,690 refund impact)</li>
+                            <li><strong>Direct Hotel Website:</strong> 14.3% cancellation rate (highest retention and margin)</li>
+                            <li><strong>Phone Reservations:</strong> 18.2% cancellation rate (corporate accounts)</li>
+                            <li><strong>Walk-In Guests:</strong> 0% cancellations (guaranteed revenue)</li>
+                        </ul>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-title">Room Tier Revenue & Loyalty Contribution</div>
+                        <ul class="card-list" style="margin-top: 0.5rem;">
+                            <li><strong>Suite & Presidential categories:</strong> Account for 48% of total gross hotel revenue</li>
+                            <li><strong>Platinum Loyalty Members:</strong> Average 3.2x higher ADR than standard guest bookers</li>
+                            <li><strong>Seaside Resort:</strong> Achieved longest average length of stay (4.2 nights)</li>
+                            <li><strong>City Central Inn:</strong> Highest inventory turnover with standard rooms</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: SERVERLESS AUTOMATION -->
+        <div class="slide" id="slide-6">
+            <div class="slide-header">
+                <div class="hanko-stamp">06</div>
+                <div class="header-meta">
+                    <span class="header-cat">SERVERLESS AUTOMATION</span>
+                    <h2 class="header-title">Scheduled Task Definition & Operational Health</h2>
+                    <p class="header-sub">Serverless aggregation task running daily at 6 AM UTC with real-time health verification via Task History.</p>
+                </div>
+            </div>
+            <div class="slide-body">
+                <div class="grid-2x2">
+                    <div class="zen-card">
+                        <div class="card-title">Snowflake Scheduled Task Definition</div>
+                        <div class="card-tag tag-indigo">Automated Daily Aggregation Script</div>
+                        <pre class="code-zen">CREATE OR REPLACE TASK 
+  TASK_DAILY_RESERVATION_AGGREGATION
+  WAREHOUSE = HOTEL_WH
+  SCHEDULE  = 'USING CRON 0 6 * * * UTC'
+AS
+INSERT INTO DAILY_RESERVATION_SUMMARY
+(
+  summary_date, hotel_name, room_type,
+  total_reservations, net_revenue,
+  occupancy_pct, top_booking_source...
+)
+SELECT ... FROM FACT_RESERVATION_ANALYTICS;
+
+ALTER TASK ... RESUME;</pre>
+                    </div>
+
+                    <div class="zen-card">
+                        <div class="card-title" style="color: var(--matcha);">Task Execution History & Metrics</div>
+                        <div class="card-tag tag-matcha">TABLE(INFORMATION_SCHEMA.TASK_HISTORY())</div>
+                        <ul class="card-list" style="margin-top: 0.5rem;">
+                            <li><strong>Execution State:</strong> <span style="color: var(--matcha); font-weight: 700;">SUCCEEDED</span></li>
+                            <li><strong>Run Duration:</strong> 3.07 seconds (Low compute latency)</li>
+                            <li><strong>Schedule Cadence:</strong> Daily at 06:00 UTC</li>
+                            <li><strong>Compute Sizing:</strong> HOTEL_WH (X-Small)</li>
+                            <li><strong>Auto-Suspend:</strong> 120 seconds (Zero idle compute costs)</li>
+                            <li><strong>Operational Impact:</strong> Fully autonomous pipeline with zero human intervention</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: BUSINESS VALUE -->
+        <div class="slide" id="slide-7">
+            <div class="slide-header">
+                <div class="hanko-stamp">07</div>
+                <div class="header-meta">
+                    <span class="header-cat">BUSINESS VALUE & ROI</span>
+                    <h2 class="header-title">Strategic Impact & Production Deliverables</h2>
+                    <p class="header-sub">Clean, high-precision analytics delivered through Snowflake modern cloud data engineering best practices.</p>
+                </div>
+            </div>
+            <div class="slide-body">
+                <div class="grid-4col" style="margin-bottom: 1.5rem;">
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-indigo"></div>
+                        <div class="card-title">Data Trust</div>
+                        <div class="card-tag tag-indigo">Automated Validation</div>
+                        <div class="card-text">Quarantined corrupt check-out dates and zero-night stays, ensuring 100% executive reporting accuracy.</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-vermilion"></div>
+                        <div class="card-title">Revenue Protection</div>
+                        <div class="card-tag tag-vermilion">Refund Transparency</div>
+                        <div class="card-text">Exposed $2,690 in OTA cancellation refunds, providing actionable data for policy adjustments.</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-matcha"></div>
+                        <div class="card-title">Dynamic Yield</div>
+                        <div class="card-tag tag-matcha">Capacity Intelligence</div>
+                        <div class="card-text">Accurate monthly occupancy rates empower revenue management to optimize room rates dynamically.</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-sumi"></div>
+                        <div class="card-title">Zero Idle Cost</div>
+                        <div class="card-tag tag-slate">Optimized Compute</div>
+                        <div class="card-text">Task executes in 3 seconds on an X-Small warehouse with 120s auto-suspend, minimizing infrastructure spend.</div>
+                    </div>
+                </div>
+
+                <div class="zen-card" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <div style="font-size: 0.9rem; font-weight: 700; color: var(--sumi-ink);">
+                        GitHub: <span style="color: var(--vermilion);">https://github.com/ashlesh0805/snowflake-hotel-reservation-analytics</span>
+                    </div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--slate-gray);">
+                        PROJECT BY TEAM 07
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: THANK YOU & TEAM 07 ATTRIBUTION -->
+        <div class="slide" id="slide-8">
+            <div class="slide-header">
+                <div class="hanko-stamp">07</div>
+                <div class="header-meta">
+                    <span class="header-cat">PROJECT CONCLUSION • QUESTIONS &amp; DISCUSSION</span>
+                    <h2 class="header-title" style="font-size: 2.2rem;">Thank You</h2>
+                    <p class="header-sub">Hotel Reservation & Occupancy Analytics System on Snowflake</p>
+                </div>
+            </div>
+            <div class="slide-body">
+                <div style="font-size: 0.88rem; font-weight: 800; color: var(--sumi-ink); letter-spacing: 1px; margin-bottom: 0.75rem;">
+                    PROJECT DELIVERED BY TEAM 07
+                </div>
+
+                <div class="grid-5col" style="margin-bottom: 1.25rem;">
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-vermilion"></div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--sumi-ink);">Ashlesh</div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--vermilion); margin-bottom: 0.35rem;">TEAM LEAD</div>
+                        <div style="font-size: 0.82rem; color: var(--slate-gray);">Pipeline Architecture & Snowflake Engineering</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-indigo"></div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--sumi-ink);">Varun</div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--indigo); margin-bottom: 0.35rem;">DATA ENGINEER</div>
+                        <div style="font-size: 0.82rem; color: var(--slate-gray);">Medallion Data Modeling & Schema Design</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-matcha"></div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--sumi-ink);">Sakshi</div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--matcha); margin-bottom: 0.35rem;">QUALITY ANALYST</div>
+                        <div style="font-size: 0.82rem; color: var(--slate-gray);">Data Validation & Date Anomaly Rules</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-sumi"></div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--sumi-ink);">Barghavi</div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--sumi-ink); margin-bottom: 0.35rem;">ANALYTICS LEAD</div>
+                        <div style="font-size: 0.82rem; color: var(--slate-gray);">Occupancy Modeling & Revenue Metrics</div>
+                    </div>
+                    <div class="zen-card">
+                        <div class="card-accent-bar bar-vermilion"></div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--sumi-ink);">Akshitha</div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--vermilion); margin-bottom: 0.35rem;">AUTOMATION LEAD</div>
+                        <div style="font-size: 0.82rem; color: var(--slate-gray);">Serverless Tasks & Execution Monitoring</div>
+                    </div>
+                </div>
+
+                <div class="zen-card" style="padding: 1rem 1.25rem;">
+                    <div style="font-size: 0.72rem; font-weight: 800; color: var(--muted-stone); letter-spacing: 1px;">OPEN SOURCE REPOSITORY & LIVE ARTIFACTS</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--vermilion); margin: 0.2rem 0;">https://github.com/ashlesh0805/snowflake-hotel-reservation-analytics</div>
+                    <div style="font-size: 0.82rem; color: var(--slate-gray);">Complete SQL scripts, CSV datasets, validation queries, screenshots, and presentation decks are available on GitHub.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="btn-nav" id="prevBtn" onclick="prevSlide()">← Previous Slide</button>
+        <span class="slide-counter" id="slideCounter">Slide 1 of 8</span>
+        <button class="btn-nav" id="nextBtn" onclick="nextSlide()">Next Slide →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 8;
+
+        function updateSlide() {
+            document.querySelectorAll('.slide').forEach((el, index) => {
+                if (index + 1 === currentSlide) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+            document.getElementById('slideCounter').innerText = `Slide ${currentSlide} of ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>
